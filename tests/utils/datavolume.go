@@ -103,6 +103,33 @@ func NewDataVolumeWithHTTPImport(dataVolumeName string, size string, httpURL str
 	}
 }
 
+// NewDataVolumeWithImageioImport initializes a DataVolume struct with Imageio annotations
+func NewDataVolumeWithImageioImport(dataVolumeName string, size string, httpURL string, secret string, configMap string, diskID string) *cdiv1.DataVolume {
+	return &cdiv1.DataVolume{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: dataVolumeName,
+		},
+		Spec: cdiv1.DataVolumeSpec{
+			Source: cdiv1.DataVolumeSource{
+				Imageio: &cdiv1.DataVolumeSourceImageIO{
+					URL:           httpURL,
+					SecretRef:     secret,
+					CertConfigMap: configMap,
+					DiskID:        diskID,
+				},
+			},
+			PVC: &k8sv1.PersistentVolumeClaimSpec{
+				AccessModes: []k8sv1.PersistentVolumeAccessMode{k8sv1.ReadWriteOnce},
+				Resources: k8sv1.ResourceRequirements{
+					Requests: k8sv1.ResourceList{
+						k8sv1.ResourceName(k8sv1.ResourceStorage): resource.MustParse(size),
+					},
+				},
+			},
+		},
+	}
+}
+
 // NewDataVolumeWithHTTPImportToBlockPV initializes a DataVolume struct with HTTP annotations to import to block PV
 func NewDataVolumeWithHTTPImportToBlockPV(dataVolumeName string, size string, httpURL, storageClassName string) *cdiv1.DataVolume {
 	volumeMode := corev1.PersistentVolumeMode(corev1.PersistentVolumeBlock)
